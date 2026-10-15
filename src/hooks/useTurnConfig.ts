@@ -17,7 +17,7 @@
  *
  * CONFIGURATION SOURCES:
  * 1. TURN servers: API endpoint (configurable via VITE_RTC_CONFIG_ENDPOINT, defaults to /api/get-config) - OPTIONAL
- * 2. No fallback servers - only configured servers are used
+ * 2. Fallback: STUN only, which requires no credentials
  *
  * CACHING:
  * - Cached for entire session (staleTime)
@@ -37,6 +37,15 @@ import {
 } from 'core/config/turnConfig'
 
 import { QueryKey } from './types'
+
+/**
+ * Used when the TURN config endpoint is unavailable. STUN needs no
+ * credentials, so this is safe to ship in the bundle - unlike a TURN
+ * credential, which would be readable by anyone who loads the app.
+ */
+const stunOnlyIceServers: RTCIceServer[] = [
+  { urls: ['stun:124.220.174.142:3478'] },
+]
 
 /**
  * Gets the configurable RTC config endpoint from environment variable
@@ -106,18 +115,15 @@ export const useTurnConfig = (
     retryDelay: 1000, // 1 second delay before retry
   })
 
-  // Merge TURN server from API
+  // The TURN credential is issued per session by the API endpoint, so nothing
+  // secret ends up in this bundle. When that endpoint is unavailable we fall
+  // back to STUN alone: it needs no credentials and still permits direct
+  // connections, just not relayed ones.
   const turnConfig = useMemo((): RTCConfiguration => {
     return {
-      iceServers: [
-        {
-          urls: 'turn:124.220.174.142:3478',
-          username: 'rv1106',
-          credential: 'X7kqmP2nR9bL4wF8jN3vT6yH1cZ5aS',
-        },
-      ],
+      iceServers: turnServer ? [turnServer] : stunOnlyIceServers,
     }
-  }, [])
+  }, [turnServer])
 
   return {
     turnConfig,
