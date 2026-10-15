@@ -7,7 +7,6 @@ import { useContext, useMemo } from 'react'
 import { v4 as uuid } from 'uuid'
 
 import { ChatTranscript } from 'components/ChatTranscript'
-import { WholePageLoading } from 'components/Loading'
 import { MessageForm } from 'components/MessageForm'
 import { trackerUrls } from 'config/trackerUrls'
 import { RoomContext } from 'contexts/RoomContext'
@@ -228,14 +227,11 @@ export const Room = (props: RoomProps) => {
   const { isEnhancedConnectivityEnabled } =
     useContext(SettingsContext).getUserSettings()
 
-  // Fetch rtcConfig from server
-  const { turnConfig, isLoading: isConfigLoading } = useTurnConfig(
-    isEnhancedConnectivityEnabled
-  )
-
-  if (isConfigLoading) {
-    return <WholePageLoading />
-  }
+  // The TURN config always resolves, so the room must never wait on the
+  // optional API request: gating on it held the room on the loading screen for
+  // as long as that request took to fail, which is a minute or more when the
+  // endpoint is unreachable.
+  const { turnConfig } = useTurnConfig(isEnhancedConnectivityEnabled)
 
   return <RoomCore {...props} turnConfig={turnConfig} />
 }

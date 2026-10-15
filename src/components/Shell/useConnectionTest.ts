@@ -23,9 +23,7 @@ export const useConnectionTest = () => {
   const settingsContext = useContext(SettingsContext)
   const { isEnhancedConnectivityEnabled } = settingsContext.getUserSettings()
 
-  const { turnConfig, isLoading: isConfigLoading } = useTurnConfig(
-    isEnhancedConnectivityEnabled
-  )
+  const { turnConfig } = useTurnConfig(isEnhancedConnectivityEnabled)
 
   const [hasHost, setHasHost] = useState(false)
   const [hasTURNServer, setHasTURNServer] = useState(false)
@@ -34,11 +32,6 @@ export const useConnectionTest = () => {
   )
 
   useEffect(() => {
-    // Don't start connection tests until rtcConfig is loaded
-    if (isConfigLoading) {
-      return
-    }
-
     const checkRtcConnection = async () => {
       const connectionTest = new ConnectionTest(turnConfig)
 
@@ -115,7 +108,7 @@ export const useConnectionTest = () => {
         await sleep(trackerPollInterval)
       }
     })()
-  }, [turnConfig, isConfigLoading])
+  }, [turnConfig])
 
   return {
     connectionTestResults: { hasHost, hasTURNServer, trackerConnection },
