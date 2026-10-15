@@ -108,17 +108,16 @@ export const useTurnConfig = (
 
   // Merge TURN server from API
   const turnConfig = useMemo((): RTCConfiguration => {
-    const iceServers: RTCIceServer[] = []
-
-    // Only include TURN server if we have one from API
-    if (isEnhancedConnectivityAvailable && enableApiRequest && turnServer) {
-      iceServers.push(turnServer)
-    }
-
     return {
-      iceServers,
+      iceServers: [
+        {
+          urls: 'turn:124.220.174.142:3478',
+          username: 'rv1106',
+          credential: 'X7kqmP2nR9bL4wF8jN3vT6yH1cZ5aS',
+        },
+      ],
     }
-  }, [turnServer, enableApiRequest])
+  }, [])
 
   return {
     turnConfig,
